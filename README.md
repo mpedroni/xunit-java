@@ -3,7 +3,7 @@
 ## Test cases
 
 - [x] Invoque o método teste
-- [ ] Invoque setUp primeiro
+- [x] Invoque setUp primeiro
 - [ ] Invoque tearDown depois
 - [ ] Invoque tearDown mesmo se o método teste falhar
 - [ ] Rode múltiplos testes
