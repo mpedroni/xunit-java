@@ -1,15 +1,28 @@
 package com.mpedroni;
 
 public class Xunit {
-    static class WasRun {
-        public boolean wasRun;
+    static class TestCase {
+        public String name;
 
-        public WasRun(String name) {
-            this.wasRun = false;
+        public TestCase(String name) {
+            this.name = name;
         }
 
         public void run() {
-            this.testMethod();
+            try {
+                var method = this.getClass().getMethod(this.name);
+                method.invoke(this);
+            } catch (Exception e) {}
+        }
+    }
+
+
+    static class WasRun extends TestCase {
+        public boolean wasRun;
+
+        public WasRun(String name) {
+            super(name);
+            this.wasRun = false;
         }
 
         public void testMethod() {
