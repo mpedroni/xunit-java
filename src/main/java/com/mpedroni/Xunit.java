@@ -11,6 +11,11 @@ public class Xunit {
             throw new AssertionError();
     }
 
+    static  void assertEquals(Object a, Object b) {
+        if(!a.equals(b))
+            throw new AssertionError();
+    }
+
     static class TestCase {
         public String name;
 
@@ -29,28 +34,38 @@ public class Xunit {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            tearDown();
         }
+
+        public void tearDown() {}
     }
 
 
     static class WasRun extends TestCase {
         public boolean wasRun;
-        public boolean wasSetUp;
+        public String log;
 
         public WasRun(String name) {
             super(name);
             this.wasRun = false;
-            this.wasSetUp = false;
+            this.log = "";
         }
 
 
         @Override
         public void setUp() {
-            this.wasSetUp = true;
+            this.log += "setUp ";
         }
 
         public void testMethod() {
+            this.log += "testMethod ";
             this.wasRun = true;
+        }
+
+        @Override
+        public void tearDown() {
+            this.log += "tearDown ";
         }
     }
 
@@ -59,22 +74,14 @@ public class Xunit {
             super(name);
         }
 
-        public void testRunning() {
-            var wasRun = new WasRun("testMethod");
-            assertFalse(wasRun.wasRun);
-            wasRun.run();
-            assertTrue(wasRun.wasRun);
-        }
-
-        public void testSetUp() {
+        public void testTemplateMethod() {
             var wasRun = new WasRun("testMethod");
             wasRun.run();
-            assertTrue(wasRun.wasSetUp);
+            assertEquals(wasRun.log, "setUp testMethod tearDown ");
         }
     }
 
     public static void main(String[] args) {
-        new TestCaseTest("testRunning").run();
-        new TestCaseTest("testSetUp").run();
+        new TestCaseTest("testTemplateMethod").run();
     }
 }
