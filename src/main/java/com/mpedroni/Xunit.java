@@ -25,20 +25,41 @@ public class Xunit {
 
         public void setUp() {}
 
-        public void run() {
+        public TestResult run() {
             setUp();
+            var result = new TestResult();
 
             try {
                 var method = this.getClass().getMethod(this.name);
                 method.invoke(this);
+                result.run();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             tearDown();
+
+            return result;
         }
 
         public void tearDown() {}
+    }
+
+    static class TestResult {
+        private int runCount = 0;
+        private int failedCount = 0;
+
+        public String summary() {
+            return String.format("%d run, %d failed", runCount, failedCount);
+        }
+
+        public void run() {
+            runCount += 1;
+        }
+
+        public void failed() {
+            failedCount += 1;
+        }
     }
 
 
@@ -75,13 +96,28 @@ public class Xunit {
         }
 
         public void testTemplateMethod() {
-            var wasRun = new WasRun("testMethod");
-            wasRun.run();
-            assertEquals(wasRun.log, "setUp testMethod tearDown ");
+            var test = new WasRun("testMethod");
+            test.run();
+            assertEquals(test.log, "setUp testMethod tearDown ");
+        }
+
+        public void testResult() {
+            var test = new WasRun("testMethod");
+            var result = test.run();
+            assertEquals(result.summary(), "1 run, 0 failed");
+        }
+
+        public void testFailedResultFormatting() {
+            var result = new TestResult();
+            result.run();
+            result.failed();
+            assertEquals(result.summary(), "1 run, 1 failed");
         }
     }
 
     public static void main(String[] args) {
         new TestCaseTest("testTemplateMethod").run();
+        new TestCaseTest("testResult").run();
+        new TestCaseTest("testFailedResultFormatting").run();
     }
 }
