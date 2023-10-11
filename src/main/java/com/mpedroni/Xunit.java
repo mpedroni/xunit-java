@@ -1,19 +1,15 @@
 package com.mpedroni;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Xunit {
-    static void assertTrue(Boolean condition) {
-        if (!condition)
-            throw new AssertionError();
-    }
-
-    static void assertFalse(Boolean condition) {
-        if (condition)
-            throw new AssertionError();
-    }
-
     static  void assertEquals(Object a, Object b) {
-        if(!a.equals(b))
-            throw new AssertionError();
+        if(!a.equals(b)) {
+            var error = new AssertionError(String.format("Expected \"%s\" but got \"%s\"", a, b));
+            error.printStackTrace();
+        }
+
     }
 
     static class TestCase {
@@ -25,21 +21,19 @@ public class Xunit {
 
         public void setUp() {}
 
-        public TestResult run() {
+        public void run(TestResult result) {
             setUp();
-            var result = new TestResult();
+
+            result.testStarted();
 
             try {
                 var method = this.getClass().getMethod(this.name);
                 method.invoke(this);
-                result.run();
             } catch (Exception e) {
-                e.printStackTrace();
+                result.testFailed();
             }
 
             tearDown();
-
-            return result;
         }
 
         public void tearDown() {}
@@ -53,11 +47,11 @@ public class Xunit {
             return String.format("%d run, %d failed", runCount, failedCount);
         }
 
-        public void run() {
+        public void testStarted() {
             runCount += 1;
         }
 
-        public void failed() {
+        public void testFailed() {
             failedCount += 1;
         }
     }
@@ -84,40 +78,87 @@ public class Xunit {
             this.wasRun = true;
         }
 
+        public void testBrokenMethod() throws Exception {
+            throw new Exception("Broken method");
+        }
+
         @Override
         public void tearDown() {
             this.log += "tearDown ";
         }
     }
 
+    static class TestSuite {
+        private final List<TestCase> tests = new ArrayList<>();
+
+        public void add(TestCase test) {
+            tests.add(test);
+        }
+
+        public void run(TestResult result) {
+            for (var test : tests) {
+                test.run(result);
+            }
+        }
+    }
+
     static class TestCaseTest extends TestCase {
+        private TestResult result;
+
+        @Override
+        public void setUp() {
+            result = new TestResult();
+        }
+
         public TestCaseTest(String name) {
             super(name);
         }
 
         public void testTemplateMethod() {
             var test = new WasRun("testMethod");
-            test.run();
+            test.run(result);
             assertEquals(test.log, "setUp testMethod tearDown ");
         }
 
         public void testResult() {
             var test = new WasRun("testMethod");
-            var result = test.run();
+            test.run(result);
             assertEquals(result.summary(), "1 run, 0 failed");
+        }
+
+        public void testFailedResult() {
+            var test = new WasRun("testBrokenMethod");
+            test.run(result);
+            assertEquals(result.summary(), "1 run, 1 failed");
         }
 
         public void testFailedResultFormatting() {
             var result = new TestResult();
-            result.run();
-            result.failed();
+            result.testStarted();
+            result.testFailed();
             assertEquals(result.summary(), "1 run, 1 failed");
+        }
+
+        public void testSuite() {
+            var suite = new TestSuite();
+            suite.add(new WasRun("testMethod"));
+            suite.add(new WasRun("testBrokenMethod"));
+            suite.run(result);
+            assertEquals(result.summary(), "2 run, 1 failed");
         }
     }
 
     public static void main(String[] args) {
-        new TestCaseTest("testTemplateMethod").run();
-        new TestCaseTest("testResult").run();
-        new TestCaseTest("testFailedResultFormatting").run();
+        var suite = new TestSuite();
+        suite.add(new TestCaseTest("testTemplateMethod"));
+        suite.add(new TestCaseTest("testResult"));
+        suite.add(new TestCaseTest("testFailedResult"));
+        suite.add(new TestCaseTest("testFailedResultFormatting"));
+        suite.add(new TestCaseTest("testSuite"));
+
+        var result = new TestResult();
+        suite.run(result);
+
+        System.out.println(result.summary());
     }
 }
