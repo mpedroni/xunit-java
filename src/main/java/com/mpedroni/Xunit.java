@@ -19,6 +19,7 @@ public class Xunit {
         suite.add(new TestCaseTest("testFailedResultFormatting"));
         suite.add(new TestCaseTest("testSuite"));
         suite.add(new TestCaseTest("testFailedSetUp"));
+        suite.add(new TestCaseTest("testTearDownAfterFailing"));
 
         var result = new TestResult();
         suite.run(result);
@@ -183,6 +184,13 @@ public class Xunit {
             var test = new WasRunWithFailedSetUp("testMethod");
             test.run(result);
             assertEquals(test.log, "setUp ");
+            assertEquals(result.summary(), "1 run, 1 failed");
+        }
+
+        public void testTearDownAfterFailing() {
+            var test = new WasRun("testFailedMethod");
+            test.run(result);
+            assertEquals(test.log, "setUp tearDown ");
             assertEquals(result.summary(), "1 run, 1 failed");
         }
     }
