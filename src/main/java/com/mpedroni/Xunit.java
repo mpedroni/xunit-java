@@ -4,12 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Xunit {
-    static  void assertEquals(Object a, Object b) {
-        if(!a.equals(b)) {
+    static void assertEquals(Object a, Object b) {
+        if (!a.equals(b)) {
             var error = new AssertionError(String.format("Expected \"%s\" but got \"%s\"", a, b));
             error.printStackTrace();
         }
+    }
 
+    public static void main(String[] args) {
+        var suite = new TestSuite();
+        suite.add(new TestCaseTest("testTemplateMethod"));
+        suite.add(new TestCaseTest("testResult"));
+        suite.add(new TestCaseTest("testFailedResult"));
+        suite.add(new TestCaseTest("testFailedResultFormatting"));
+        suite.add(new TestCaseTest("testSuite"));
+
+        var result = new TestResult();
+        suite.run(result);
+
+        System.out.println(result.summary());
     }
 
     static class TestCase {
@@ -19,7 +32,8 @@ public class Xunit {
             this.name = name;
         }
 
-        public void setUp() {}
+        public void setUp() {
+        }
 
         public void run(TestResult result) {
             setUp();
@@ -36,7 +50,8 @@ public class Xunit {
             tearDown();
         }
 
-        public void tearDown() {}
+        public void tearDown() {
+        }
     }
 
     static class TestResult {
@@ -55,7 +70,6 @@ public class Xunit {
             failedCount += 1;
         }
     }
-
 
     static class WasRun extends TestCase {
         public boolean wasRun;
@@ -105,13 +119,13 @@ public class Xunit {
     static class TestCaseTest extends TestCase {
         private TestResult result;
 
+        public TestCaseTest(String name) {
+            super(name);
+        }
+
         @Override
         public void setUp() {
             result = new TestResult();
-        }
-
-        public TestCaseTest(String name) {
-            super(name);
         }
 
         public void testTemplateMethod() {
@@ -146,19 +160,5 @@ public class Xunit {
             suite.run(result);
             assertEquals(result.summary(), "2 run, 1 failed");
         }
-    }
-
-    public static void main(String[] args) {
-        var suite = new TestSuite();
-        suite.add(new TestCaseTest("testTemplateMethod"));
-        suite.add(new TestCaseTest("testResult"));
-        suite.add(new TestCaseTest("testFailedResult"));
-        suite.add(new TestCaseTest("testFailedResultFormatting"));
-        suite.add(new TestCaseTest("testSuite"));
-
-        var result = new TestResult();
-        suite.run(result);
-
-        System.out.println(result.summary());
     }
 }
