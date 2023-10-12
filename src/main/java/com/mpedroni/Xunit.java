@@ -18,6 +18,7 @@ public class Xunit {
         suite.add(new TestCaseTest("testFailedResult"));
         suite.add(new TestCaseTest("testFailedResultFormatting"));
         suite.add(new TestCaseTest("testSuite"));
+        suite.add(new TestCaseTest("testFailedSetUp"));
 
         var result = new TestResult();
         suite.run(result);
@@ -36,9 +37,14 @@ public class Xunit {
         }
 
         public void run(TestResult result) {
-            setUp();
-
             result.testStarted();
+
+            try {
+                setUp();
+            } catch (Error error) {
+                result.testFailed();
+                return;
+            }
 
             try {
                 var method = this.getClass().getMethod(this.name);
@@ -102,6 +108,18 @@ public class Xunit {
         }
     }
 
+    static class WasRunWithFailedSetUp extends WasRun {
+        public WasRunWithFailedSetUp(String name) {
+            super(name);
+        }
+
+        @Override
+        public void setUp() {
+            log += "setUp ";
+            throw new Error("Failed setUp");
+        }
+    }
+
     static class TestSuite {
         private final List<TestCase> tests = new ArrayList<>();
 
@@ -159,6 +177,13 @@ public class Xunit {
             suite.add(new WasRun("testBrokenMethod"));
             suite.run(result);
             assertEquals(result.summary(), "2 run, 1 failed");
+        }
+
+        public void testFailedSetUp() {
+            var test = new WasRunWithFailedSetUp("testMethod");
+            test.run(result);
+            assertEquals(test.log, "setUp ");
+            assertEquals(result.summary(), "1 run, 1 failed");
         }
     }
 }

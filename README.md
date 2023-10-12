@@ -9,6 +9,6 @@
 - [x] Rode múltiplos testes
 - [x] Informe resultados coletados
 - [x] Registra ordem de execução em WasRun
-- [ ] Capturar e informar erros em setup
+- [x] Capturar e informar erros em setUp
 - [ ] Identifica casos de teste como métodos que começam com `test`
 - [ ] Adicionar informações de falha no resultado de teste
