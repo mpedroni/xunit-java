@@ -1,4 +1,4 @@
-# Java XUnit
+# Java xUnit
 
 A simple testing framework, inspired by the xUnit framework family, for Java. I'm following along with Kent Beck's [Test-Driven Development: By Example](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530) book.
 
